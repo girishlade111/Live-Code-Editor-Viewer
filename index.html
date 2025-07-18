@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Code Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Basic theme variables */
+        :root {
+            --bg-light: #f9fafb;
+            --bg-dark: #0d1117;
+            --border-light: #e5e7eb;
+            --border-dark: #30363d;
+            --editor-bg-light: #ffffff;
+            --editor-bg-dark: #161b22;
+            --text-light: #1f2937;
+            --text-dark: #c9d1d9;
+            --header-bg-light: #ffffff;
+            --header-bg-dark: #161b22;
+            --icon-fill-light: #4b5563;
+            --icon-fill-dark: #8b949e;
+        }
+
+        html.dark {
+            color-scheme: dark;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Applying theme colors using CSS variables */
+        .theme-light {
+            --bg-color: var(--bg-light);
+            --text-color: var(--text-light);
+            --border-color: var(--border-light);
+            --editor-bg: var(--editor-bg-light);
+            --header-bg: var(--header-bg-light);
+            --icon-fill: var(--icon-fill-light);
+        }
+
+        .theme-dark {
+            --bg-color: var(--bg-dark);
+            --text-color: var(--text-dark);
+            --border-color: var(--border-dark);
+            --editor-bg: var(--editor-bg-dark);
+            --header-bg: var(--header-bg-dark);
+            --icon-fill: var(--icon-fill-dark);
+        }
+        
+        /* Custom scrollbar for a modern look */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #4a5568;
+            border-radius: 20px;
+            border: 3px solid transparent;
+        }
+        
+        .dark textarea::-webkit-scrollbar-thumb {
+             background-color: #718096;
+        }
+
+        /* Ensuring layout fills the screen height */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .main-container {
+            height: calc(100vh - 65px); /* Full height minus header */
+        }
+    </style>
+</head>
+<body class="bg-[var(--bg-color)] text-[var(--text-color)]">
+
+    <!-- Header Section -->
+    <header class="h-[65px] flex items-center justify-between px-4 sm:px-6 py-2 border-b border-[var(--border-color)] bg-[var(--header-bg)] shadow-sm">
+        <div class="flex items-center gap-3">
+            <svg class="w-8 h-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+            </svg>
+            <h1 class="text-xl font-bold">Live Code Editor</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <!-- Theme Toggle Button -->
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <svg id="theme-icon-light" class="w-6 h-6 fill-[var(--icon-fill)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.106a.75.75 0 0 1 0 1.06l-1.591 1.59a.75.75 0 1 1-1.06-1.06l1.59-1.59a.75.75 0 0 1 1.06 0ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.836 17.836a.75.75 0 0 1-1.06 0l-1.59-1.591a.75.75 0 1 1 1.06-1.06l1.59 1.59a.75.75 0 0 1 0 1.06ZM12 21a.75.75 0 0 1-.75-.75v-2.25a.75.75 0 0 1 1.5 0V20.25a.75.75 0 0 1-.75.75ZM6.106 18.894a.75.75 0 0 1 0-1.06l1.59-1.59a.75.75 0 1 1 1.06 1.06l-1.59 1.591a.75.75 0 0 1-1.06 0ZM3 12a.75.75 0 0 1 .75-.75h2.25a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 12ZM5.164 5.164a.75.75 0 0 1 1.06 0l1.59 1.591a.75.75 0 0 1-1.06 1.06L5.164 6.225a.75.75 0 0 1 0-1.06Z"/></svg>
+                <svg id="theme-icon-dark" class="w-6 h-6 hidden fill-[var(--icon-fill)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 1.5a.75.75 0 0 1 .75.75V3a.75.75 0 0 1-1.5 0V2.25A.75.75 0 0 1 12 1.5ZM18.5 5.5a.75.75 0 0 1 .53 1.28l-1.591 1.59a.75.75 0 0 1-1.06-1.06l1.59-1.59a.75.75 0 0 1 .53-.22ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.47 18.53a.75.75 0 0 1 0-1.06l1.59-1.591a.75.75 0 1 1 1.06 1.06l-1.59 1.59a.75.75 0 0 1-1.06 0ZM12 21.75a.75.75 0 0 1-.75-.75V18.75a.75.75 0 0 1 1.5 0v2.25a.75.75 0 0 1-.75.75ZM6.53 17.47a.75.75 0 0 1-1.06 0l-1.59-1.59a.75.75 0 0 1 1.06-1.06l1.59 1.59a.75.75 0 0 1 0 1.06ZM2.25 12a.75.75 0 0 1 .75-.75h2.25a.75.75 0 0 1 0 1.5H3a.75.75 0 0 1-.75-.75ZM5.5 6.53a.75.75 0 0 1 0 1.06l-1.59 1.59a.75.75 0 1 1-1.06-1.06l1.59-1.59a.75.75 0 0 1 1.06 0ZM12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z"/></svg>
+            </button>
+            <!-- Export Button -->
+            <button id="export-btn" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content: Editors and Preview -->
+    <main class="main-container grid grid-cols-1 lg:grid-cols-2 gap-px bg-[var(--border-color)]">
+        <!-- Code Editors Section -->
+        <div class="flex flex-col h-full bg-[var(--bg-color)]">
+            <!-- HTML Editor -->
+            <div class="flex-1 flex flex-col min-h-0">
+                <div class="flex justify-between items-center p-2 border-b border-[var(--border-color)] bg-[var(--editor-bg)]">
+                    <label for="html-code" class="font-semibold text-sm">HTML</label>
+                    <input type="file" id="html-file" accept=".html" class="hidden">
+                    <button onclick="document.getElementById('html-file').click()" class="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">Load File</button>
+                </div>
+                <textarea id="html-code" class="w-full h-full p-3 bg-[var(--editor-bg)] text-[var(--text-color)] resize-none outline-none font-mono text-sm" spellcheck="false"></textarea>
+            </div>
+
+            <!-- CSS Editor -->
+            <div class="flex-1 flex flex-col min-h-0 border-t border-[var(--border-color)]">
+                <div class="flex justify-between items-center p-2 border-b border-[var(--border-color)] bg-[var(--editor-bg)]">
+                    <label for="css-code" class="font-semibold text-sm">CSS</label>
+                    <input type="file" id="css-file" accept=".css" class="hidden">
+                    <button onclick="document.getElementById('css-file').click()" class="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">Load File</button>
+                </div>
+                <textarea id="css-code" class="w-full h-full p-3 bg-[var(--editor-bg)] text-[var(--text-color)] resize-none outline-none font-mono text-sm" spellcheck="false"></textarea>
+            </div>
+
+            <!-- JavaScript Editor -->
+            <div class="flex-1 flex flex-col min-h-0 border-t border-[var(--border-color)]">
+                 <div class="flex justify-between items-center p-2 border-b border-[var(--border-color)] bg-[var(--editor-bg)]">
+                    <label for="js-code" class="font-semibold text-sm">JavaScript</label>
+                    <input type="file" id="js-file" accept=".js" class="hidden">
+                    <button onclick="document.getElementById('js-file').click()" class="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">Load File</button>
+                </div>
+                <textarea id="js-code" class="w-full h-full p-3 bg-[var(--editor-bg)] text-[var(--text-color)] resize-none outline-none font-mono text-sm" spellcheck="false"></textarea>
+            </div>
+        </div>
+
+        <!-- Live Preview Section -->
+        <div class="h-full bg-white">
+            <iframe id="preview-frame" class="w-full h-full border-0" sandbox="allow-scripts allow-same-origin"></iframe>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element References ---
+            const htmlCode = document.getElementById('html-code');
+            const cssCode = document.getElementById('css-code');
+            const jsCode = document.getElementById('js-code');
+            const previewFrame = document.getElementById('preview-frame');
+            const exportBtn = document.getElementById('export-btn');
+            const themeToggle = document.getElementById('theme-toggle');
+            const lightIcon = document.getElementById('theme-icon-light');
+            const darkIcon = document.getElementById('theme-icon-dark');
+            const htmlFileInput = document.getElementById('html-file');
+            const cssFileInput = document.getElementById('css-file');
+            const jsFileInput = document.getElementById('js-file');
+
+            // --- Default Code ---
+            const defaultHTML = `<!-- Welcome to the Live Code Editor! -->
+<h1>Hello, World!</h1>
+<p>Start coding to see your changes live.</p>
+<button onclick="changeColor()">Click Me</button>
+`;
+            const defaultCSS = `body {
+    font-family: sans-serif;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+h1 {
+    color: #333;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+`;
+            const defaultJS = `function changeColor() {
+    const colors = ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    document.body.style.backgroundColor = randomColor;
+}
+`;
+
+            // --- Core Functionality ---
+
+            /**
+             * Updates the iframe with the current code from the textareas.
+             */
+            const updatePreview = () => {
+                const source = `
+                    <html>
+                        <head>
+                            <style>${cssCode.value}</style>
+                        </head>
+                        <body>
+                            ${htmlCode.value}
+                            <script>${jsCode.value}<\/script>
+                        </body>
+                    </html>
+                `;
+                previewFrame.srcdoc = source;
+            };
+
+            // --- Theme Management ---
+            
+            /**
+             * Applies the selected theme (light/dark) to the UI.
+             * @param {string} theme - The theme to apply ('light' or 'dark').
+             */
+            const applyTheme = (theme) => {
+                const root = document.documentElement;
+                if (theme === 'dark') {
+                    root.classList.add('dark');
+                    root.classList.remove('light');
+                    document.body.classList.add('theme-dark');
+                    document.body.classList.remove('theme-light');
+                    lightIcon.classList.add('hidden');
+                    darkIcon.classList.remove('hidden');
+                } else {
+                    root.classList.add('light');
+                    root.classList.remove('dark');
+                    document.body.classList.add('theme-light');
+                    document.body.classList.remove('theme-dark');
+                    darkIcon.classList.add('hidden');
+                    lightIcon.classList.remove('hidden');
+                }
+            };
+
+            // Event listener for theme toggle button
+            themeToggle.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.contains('dark');
+                const newTheme = isDark ? 'light' : 'dark';
+                applyTheme(newTheme);
+                localStorage.setItem('editorTheme', newTheme);
+            });
+
+
+            // --- File Handling ---
+
+            /**
+             * Sets up a file reader for a given input and target textarea.
+             * @param {HTMLInputElement} fileInput - The file input element.
+             * @param {HTMLTextAreaElement} targetEditor - The textarea to populate.
+             */
+            const setupFileReader = (fileInput, targetEditor) => {
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        targetEditor.value = event.target.result;
+                        updatePreview();
+                    };
+                    reader.onerror = (error) => {
+                        console.error("Error reading file:", error);
+                        alert("Failed to read file.");
+                    };
+                    reader.readAsText(file);
+                });
+            };
+            
+            setupFileReader(htmlFileInput, htmlCode);
+            setupFileReader(cssFileInput, cssCode);
+            setupFileReader(jsFileInput, jsCode);
+
+            // --- Export Functionality ---
+
+            // Event listener for the export button
+            exportBtn.addEventListener('click', () => {
+                const content = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exported Code</title>
+    <style>
+${cssCode.value}
+    </style>
+</head>
+<body>
+${htmlCode.value}
+    <script>
+${jsCode.value}
+    <\/script>
+</body>
+</html>
+                `;
+                const blob = new Blob([content], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'index.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+
+            // --- Initialization ---
+
+            // Set initial code in textareas
+            htmlCode.value = defaultHTML;
+            cssCode.value = defaultCSS;
+            jsCode.value = defaultJS;
+
+            // Add event listeners to update preview on keyup
+            [htmlCode, cssCode, jsCode].forEach(editor => {
+                editor.addEventListener('keyup', updatePreview);
+            });
+
+            // Load saved theme from localStorage or use system preference
+            const savedTheme = localStorage.getItem('editorTheme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            applyTheme(savedTheme);
+
+            // Initial render
+            updatePreview();
+        });
+    </script>
+</body>
+</html>
